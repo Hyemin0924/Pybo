@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+    <h5 class="my-3 border-bottom pb-2">{{ g.user.username }} | {{ g.user.email }}</h5>
+    <form method="post">
+        {{ form.csrf_token }}
+        {% include "form_errors.html" %}
+        <div class="mb-3">
+            <label for="username">사용자 이름</label>
+            <input type="text" class="form-control-file" name="username" id="username"
+                   placeholder="{{ form.username.data or g.user.username }}">
+        </div>
+        <button type="submit" class="btn btn-outline-secondary" style="border-color:#FD8A69; color:#FD8A69; background-color:White;">변경하기</button>
+    </form>
+
+    <h5 class="my-3 border-bottom pb-2">내가 개설한 채팅방</h5>
+
+<div class="container my-3">
+    <table class="table">
+    <thead>
+        <tr class="text-center">
+            <th> 번호</th>
+            <th style="width:50%">채팅방이름 </th>
+            <th>개설일시</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if question_list %}
+        {% for question in question_list.items %}
+        <tr class="text-center">
+            <td>{{ question_list.total - ((question_list.page-1) * question_list.per_page) - loop.index0 }}</td>
+
+            <td class="text-start">
+                <a style="color:#FD8A69;" href="{{ url_for('question.detail', question_id=question.id) }}">{{ question.subject }}</a>
+                {% if question.answer_set|length > 0 %}
+                <span class="text-danger small mx-2">{{ question.answer_set|length }}</span>
+                {% endif %}
+            </td>
+            <td>{{ question.create_date|datetime }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="3">없습니다.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+    <a class="nav-link" href="{{ url_for('question.Mylist') }}">더보기</a>
+    <h5 class="my-3 border-bottom pb-2">내가 참여중인 채팅방</h5>
+
+
+<div class="container my-3">
+    <table class="table">
+    <thead>
+        <tr class="text-center">
+            <th> 번호</th>
+            <th style="width:50%">채팅방이름 </th>
+            <th>개설일시</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if question_a_list %}
+        {% for question in question_a_list.items %}
+        <tr class="text-center">
+            <td>{{ question_a_list.total - ((question_a_list.page-1) * question_a_list.per_page) - loop.index0 }}</td>
+
+            <td class="text-start">
+                <a style="color:#FD8A69;" href="{{ url_for('question.detail', question_id=question.id) }}">{{ question.subject }}</a>
+                {% if question.answer_set|length > 0 %}
+                <span class="text-danger small mx-2">{{ question.answer_set|length }}</span>
+                {% endif %}
+            </td>
+            <td>{{ question.create_date|datetime }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="3">없습니다.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+</div>
+    <a class="nav-link" href="{{ url_for('question.Myanswer') }}">더보기</a>
+</div>
+{% endblock %}

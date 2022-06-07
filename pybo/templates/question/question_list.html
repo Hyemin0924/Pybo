@@ -1,0 +1,157 @@
+
+{% extends 'base.html' %}
+{% block content %}
+<div class="container my-3">
+    <table class="table">
+        <b><h4 style="color:#FD8A69;">인기 채팅방</h4></b>
+        <thead>
+        <tr class="text-center" style="color:black;">
+            <th> 등수</th>
+            <th style="width:50%">채팅방이름 </th>
+            <th>개설일시</th>
+            <th>추천/비추천</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if question_best %}
+        {% for question in question_best.items %}
+        <tr>
+            <td class="text-center">{{ loop.index0+1 }} </td>
+            <td class="text-start" >
+                <a style="font-size:20px; color:#FD8A69;" href="{{ url_for('question.detail', question_id=question.id) }}">{{ question.subject }}</a>
+                {% if question.answer_set|length > 0 %}
+                <span class="text-danger small mx-2">{{ question.answer_set|length }}</span>
+                {% endif %}
+                <p>{{ question.user.username }}</p>
+            </td>
+            <td >{{ question.create_date|datetime}} </td>
+            <td class="text-center" >{{ question.voter|length }} / {{ question.voterU|length  }} </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="3">없습니다.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    <table class="table">
+        <h4 style="color:#FD8A69;">전체 채팅방</h4>
+        <tr class="text-center" style="color:black;">
+            <th> 번호</th>
+            <th style="width:50%">채팅방이름 </th>
+            <th>개설일시</th>
+            <th>추천/비추천</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if question_list %}
+        {% for question in question_list.items %}
+        <tr>
+            <td class="text-center">{{ question_list.total - ((question_list.page-1) * question_list.per_page) - loop.index0 }}</td>
+            <td class="text-start">
+                <a style="font-size:20px; color:#FD8A69;" href="{{ url_for('question.detail', question_id=question.id) }}">{{ question.subject }}</a>
+                {% if question.answer_set|length > 0 %}
+                <span class="text-danger small mx-2">{{ question.answer_set|length }}</span>
+                {% endif %}
+                <p>{{ question.user.username }}</p>
+            </td>
+            <td >{{ question.create_date|datetime }} </td>
+            <td class="text-center" >{{ question.voter|length }} / {{ question.voterU|length  }} </td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="3">없습니다.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    <div class="col-6">
+            <a href="{{ url_for('question.create') }}" class="btn btn-outline-secondary" style="border-color:#FD8A69; color:#FD8A69; background-color:White;" >채팅방 만들기</a>
+    </div>
+    <!-- 페이징처리 시작 -->
+    <ul class="pagination justify-content-center">
+        <!-- 이전페이지 -->
+        {% if question_list.has_prev %}
+        <li class="page-item">
+            <a class="page-link" data-page="{{ question_list.prev_num }}" style="color:black;" href="javascript:void(0)">이전</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" style="color:black;" href="javascript:void(0)">이전</a>
+        </li>
+        {% endif %}
+        {% for page_num in question_list.iter_pages() %}
+        {% if page_num %}
+        {% if page_num != question_list.page %}
+        <li class="page-item">
+            <a class="page-link" style="color:black;" data-page="{{ page_num }}" href="javascript:void(0)">{{ page_num }}</a>
+        </li>
+        {% else %}
+        <li class="page-item active" aria-current="page">
+            <a class="page-link" style="border-color:#FD8A69; background-color:#FD8A69; color:white;" href="javascript:void(0)">{{ page_num }}</a>
+        </li>
+        {% endif %}
+        {% else %}
+        <li class="disabled">
+            <a class="page-link" style="color:black;" href="javascript:void(0)">...</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        <!-- 다음페이지 -->
+        {% if question_list.has_next %}
+        <li class="page-item">
+            <a class="page-link" data-page="{{ question_list.next_num }}" style="color:black;" href="javascript:void(0)">다음</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" style="color:black;" href="javascript:void(0)">다음</a>
+        </li>
+        {% endif %}
+    </ul>
+    <!-- 페이징처리 끝 -->
+
+    <div class="row justify-content-center my-3">
+
+        <div class="col-6 ">
+            <div class="input-group">
+                <select class="form-control" id="search_se">
+                    <option value="all" {% if se=='all' %}selected{% endif %}>모두</option>
+                    <option value="us" {% if se=='us' %}selected{% endif %}>방장</option>
+                    <option value="sub" {% if se=='sub' %}selected{% endif %}>채팅방 이름</option>
+                    <option value="aco" {% if se=='aco' %}selected{% endif %}>채팅내용</option>
+                </select>
+                <input type="text" id="search_kw" class="form-control" value="{{ kw or '' }}">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="button" id="btn_search" style="border-color:#FD8A69; background-color:#FD8A69;">찾기</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+<form id="searchForm" method="get" action="{{ url_for('question._list') }}">
+    <input type="hidden" id="kw" name="kw" value="{{ kw or '' }}">
+    <input type="hidden" id="page" name="page" value="{{ page }}">
+    <input type="hidden" id="se" name="se" value="{{ se }}">
+</form>
+{% endblock %}
+{% block script %}
+<script type='text/javascript'>
+const page_elements = document.getElementsByClassName("page-link");
+Array.from(page_elements).forEach(function(element) {
+    element.addEventListener('click', function() {
+        document.getElementById('page').value = this.dataset.page;
+        document.getElementById('searchForm').submit();
+    });
+});
+const btn_search = document.getElementById("btn_search");
+btn_search.addEventListener('click', function() {
+    document.getElementById('kw').value = document.getElementById('search_kw').value;
+    document.getElementById('se').value = document.getElementById('search_se').value;
+    document.getElementById('page').value = 1;  // 검색버튼을 클릭할 경우 1페이지부터 조회한다.
+    document.getElementById('searchForm').submit();
+});
+</script>
+{% endblock %}
